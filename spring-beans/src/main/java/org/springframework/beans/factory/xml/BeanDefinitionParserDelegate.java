@@ -404,6 +404,7 @@ public class BeanDefinitionParserDelegate {
 		//进一步解析其他所有属性并统一封装到GenericBeanDefinition类型的实例中
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
+			// 如果都没有设置 id 和 name，那么此时的 beanName 就会为 null，进入下面这块代码产生
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					//若不存在beanName，则根据Spring提供的命名规则为当前的bean生成beanName

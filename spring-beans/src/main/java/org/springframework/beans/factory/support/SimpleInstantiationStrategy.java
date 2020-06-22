@@ -68,6 +68,8 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 		 *使用动态代理的方式将包含两个特性所对应的逻辑的拦截增强器设置进去，只用这样才可保证在调用方法时会被相应的拦截器增强，
 		 *返回值为包含拦截器的代理实例*/
 		// Don't override the class with CGLIB if no overrides.
+		// 如果不存在方法覆写，那就使用 java 反射进行实例化，否则使用 CGLIB,
+		// 方法覆写 请参见附录"方法注入"中对 lookup-method 和 replaced-method 的介绍
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
@@ -92,10 +94,13 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					}
 				}
 			}
+			// 利用构造方法进行实例化
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
 			// Must generate CGLIB subclass.
+			// 存在方法覆写，利用 CGLIB 来完成实例化，需要依赖于 CGLIB 生成子类，这里就不展开了。
+			// tips: 因为如果不使用 CGLIB 的话，存在 override 的情况 JDK 并没有提供相应的实例化支持
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
 	}

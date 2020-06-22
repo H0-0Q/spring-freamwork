@@ -135,6 +135,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 			//解析profile属性
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
+				// 这块说的是根节点 <beans ... profile="dev" /> 中的 profile 是否是当前环境需要的，
+				// 如果当前环境配置的 profile 不包含此 profile，那就直接 return 了，不对此 <beans /> 解析
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
 						profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 				// We cannot use Profiles.of(...) since profile expressions are not supported
@@ -148,10 +150,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				}
 			}
 		}
-
+		//钩子
 		preProcessXml(root);
 		//递归对嵌套的<beans>进行解析
 		parseBeanDefinitions(root, this.delegate);
+		//钩子
 		postProcessXml(root);
 
 		this.delegate = parent;
@@ -184,6 +187,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 						parseDefaultElement(ele, delegate);
 					} else {
 						//解析自定义标签(<aop:config>并不是默认的Namespace，因此Aop在此解析)
+						//<mvc />、<task />、<context />、<aop />等
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -206,7 +210,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
-		//对<beans>进行解析
+		//对<beans>进行解析 需要递归
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
 			// recurse
 			doRegisterBeanDefinitions(ele);
@@ -326,6 +330,34 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		/**
+		 Property
+		 class	类的全限定名
+		 name	可指定 id、name(用逗号、分号、空格分隔)
+		 scope	作用域
+		 constructor arguments	指定构造参数
+		 properties	设置属性的值
+		 autowiring mode	no(默认值)、byName、byType、 constructor
+		 lazy-initialization mode	是否懒加载(如果被非懒加载的bean依赖了那么其实也就不能懒加载了)
+		 initialization method	bean 属性设置完成后，会调用这个方法
+		 destruction method	bean 销毁后的回调方法
+
+		 <bean id="exampleBean" name="name1, name2, name3" class="com.javadoop.ExampleBean"
+		 scope="singleton" lazy-init="true" init-method="init" destroy-method="cleanup">
+
+		 <!-- 可以用下面三种形式指定构造参数 -->
+		 <constructor-arg type="int" value="7500000"/>
+		 <constructor-arg name="years" value="7500000"/>
+		 <constructor-arg index="0" value="7500000"/>
+
+		 <!-- property 的几种情况 -->
+		 <property name="beanOne">
+		 <ref bean="anotherExampleBean"/>
+		 </property>
+		 <property name="beanTwo" ref="yetAnotherBean"/>
+		 <property name="integerProperty" value="1"/>
+		 </bean>
+		 */
 		//bdHolder实例中拥有BeanDefinition类型的实例，该实例存储了默认的<bean>配置
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {

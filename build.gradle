@@ -1,6 +1,7 @@
 buildscript {
 	repositories {
 		maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+		maven { url "http://repo.springsource.org/plugins-release" }
 		maven { url "https://repo.spring.io/plugins-release" }
 	}
 	dependencies {
@@ -273,6 +274,7 @@ configure(rootProject) {
 		testCompile(project(":spring-tx"))
 		testCompile(project(":spring-web"))
 		testCompile("javax.inject:javax.inject:1")
+		testCompile("commons-pool:commons-pool:1.5.3")
 		testCompile("javax.resource:javax.resource-api:1.7.1")
 		testCompile("javax.servlet:javax.servlet-api:3.1.0")
 		testCompile("org.aspectj:aspectjweaver:${aspectjVersion}")

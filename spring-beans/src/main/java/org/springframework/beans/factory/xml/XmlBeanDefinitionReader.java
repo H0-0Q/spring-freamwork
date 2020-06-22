@@ -316,6 +316,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
 
+		//用一个 ThreadLocal 来存放配置文件资源
 		//获取EncodedResource set,将资源封装为EncodedResource是为了对资源编码，保证资源读取的正确性
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
